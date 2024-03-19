@@ -7,10 +7,10 @@ import platform
 import jinja2
 
 # Define the ANSI color functions
-red = lambda text: f"\033[38;2;255;0;0m{text}\033[38;2;255;255;255m"
-green = lambda text: f"\033[38;2;0;255;0m{text}\033[38;2;255;255;255m"
-blue = lambda text: f"\033[38;2;0;0;255m{text}\033[38;2;255;255;255m"
-yellow = lambda text: f"\033[38;2;255;255;0m{text}\033[38;2;255;255;255m"
+red = lambda s: f'\033[91m{s}\033[0m'
+green = lambda s: f'\033[92m{s}\033[0m'
+yellow = lambda s: f'\033[93m{s}\033[0m'
+blue = lambda s: f'\033[94m{s}\033[0m'
 
 # Define the template directory
 TEMPLATE_DIR = f'{os.path.dirname(__file__)}/templates'
