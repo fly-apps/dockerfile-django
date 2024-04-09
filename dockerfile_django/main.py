@@ -53,7 +53,7 @@ class ServerEnum(str, Enum):
     daphne = "daphne"
     hypercorn = "hypercorn"
     uvicorn = "uvicorn"
-    granian = "grainian"
+    granian = "granian"
 
 
 class DependencyConfig(BaseModel):
