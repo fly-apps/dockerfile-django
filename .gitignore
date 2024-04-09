@@ -1,0 +1,22 @@
+.DS_Store
+
+# IDEs / Editors
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Environments
+.venv/
+.env
+
+# Python
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# Dependency directories
+poetry.lock
+
+# Distribution / Packaging
+dist/
