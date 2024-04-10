@@ -1,0 +1,69 @@
+{% if dj.is_python_version_pinned -%}
+# TODO: Change to an officially released version of Python before deploying to production.
+{% endif -%}
+ARG PYTHON_VERSION={{ dj.python_version }}-slim-bullseye
+
+FROM python:${PYTHON_VERSION}
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+{% if dj.dependency_config.database == 'postgres' -%}
+# install psycopg2 dependencies.
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+{% endif -%}
+
+RUN mkdir -p /code
+
+WORKDIR /code
+
+{% if dj.dependency_config.manager == 'pipenv' -%}
+RUN pip install pipenv
+COPY Pipfile Pipfile.lock /code/
+RUN pipenv install --deploy --system
+{% elif dj.dependency_config.manager == 'poetry' -%}
+RUN pip install poetry
+COPY pyproject.toml poetry.lock /code/
+RUN poetry config virtualenvs.create false
+RUN poetry install --only main --no-root --no-interaction
+{% else -%}
+COPY requirements.txt /tmp/requirements.txt
+RUN set -ex && \
+    pip install --upgrade pip && \
+    pip install -r /tmp/requirements.txt && \
+    rm -rf /root/.cache/
+{% endif -%}
+
+COPY . /code
+{% if dj.settings_config.has_collectstatic %}
+{% if not dj.settings_config.has_random_secret_key -%}
+ENV SECRET_KEY {{ dj.settings_config.random_secret_key | safe }}
+{% endif -%}
+RUN python manage.py collectstatic --noinput
+{% endif %}
+EXPOSE 8000
+
+{% if dj.config.server_type == 'wsgi' -%}
+{% if dj.dependency_config.server == 'gunicorn' -%}
+CMD ["gunicorn", "--bind", ":8000", "--workers", "2", "{{ dj.config.project_name }}.wsgi"]
+{% endif -%}
+{% elif dj.config.server_type == 'asgi' -%}
+{% if dj.dependency_config.server == 'daphne' -%}
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "{{ dj.config.project_name }}.asgi:application"]
+{% elif dj.dependency_config.server == 'hypercorn' -%}
+CMD ["hypercorn", "--bind", ":8000", "--workers", "2", "{{ dj.config.project_name }}.asgi:application"]
+{% elif dj.dependency_config.server == 'uvicorn' -%}
+CMD ["gunicorn", "--bind", ":8000", "--workers", "2", "-k", "uvicorn.workers.UvicornWorker", "{{ dj.config.project_name }}.asgi:application"]
+{% elif dj.dependency_config.server == 'granian' -%}
+CMD ["granian", "--interface", "asgi", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "{{ dj.config.project_name }}.asgi:application"]
+{% else -%}
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "{{ dj.config.project_name }}.asgi:application"]
+{% endif -%}
+{% else -%}
+# TODO: replace 'demo.wsgi' with <project_name>.wsgi
+CMD ["gunicorn", "--bind", ":8000", "--workers", "2", "demo.wsgi"]
+{% endif -%}

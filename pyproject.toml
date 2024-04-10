@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "dockerfile-django"
+version = "0.1.0"
+description = "Dockerfile Generator for Django apps."
+authors = ["Kátia Nakamura <me@katia.dev>"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+dockerfile-django = "dockerfile_django.main:cli"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+typer = "^0.12.3"
+jinja2 = "^3.1.3"
+markupsafe = "^2.1.5"
+pydantic = "^2.6.4"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.3.0"
+pytest = "^8.1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
