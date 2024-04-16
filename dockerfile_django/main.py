@@ -59,8 +59,8 @@ class ServerEnum(str, Enum):
 class DependencyConfig(BaseModel):
     manager: DependencyManagerPackageEnum = DependencyManagerPackageEnum.pip
     dependency_file_name: str = "requirements.txt"
-    database: DatabaseEnum = DatabaseEnum.postgres
     server: ServerEnum = ServerEnum.gunicorn
+    database: DatabaseEnum
 
 
 class SettingsConfig(BaseModel):
@@ -117,28 +117,60 @@ def get_server_info(dependency_file: str) -> ServerEnum:
     """
     if check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.gunicorn
+        typer.secho(
+            f"[INFO] Gunicorn Web Server was found in {dependency_file}",
+            fg=typer.colors.GREEN,
+        )
     elif check_for_keyword_in_file(dependency_file, "daphne", "#"):
         server = ServerEnum.daphne
+        typer.secho(
+            f"[INFO] Daphne Web Server was found in {dependency_file}",
+            fg=typer.colors.GREEN,
+        )
     elif check_for_keyword_in_file(dependency_file, "hypercorn", "#"):
         server = ServerEnum.hypercorn
+        typer.secho(
+            f"[INFO] Hypercorn Web Server was found in {dependency_file}",
+            fg=typer.colors.GREEN,
+        )
     elif check_for_keyword_in_file(dependency_file, "uvicorn", "#"):
         server = ServerEnum.uvicorn
-    elif check_for_keyword_in_file(dependency_file, "grainian", "#"):
+        typer.secho(
+            f"[INFO] Uvicorn Web Server was found in {dependency_file}",
+            fg=typer.colors.GREEN,
+        )
+    elif check_for_keyword_in_file(dependency_file, "granian", "#"):
         server = ServerEnum.granian
+        typer.secho(
+            f"[INFO] Granian Web Server was found in {dependency_file}",
+            fg=typer.colors.GREEN,
+        )
     else:
         server = ServerEnum.gunicorn
+        typer.secho(
+            f"[WARNING] No Web Server was found in {dependency_file}. Gunicorn Web Server is used instead.",
+            fg=typer.colors.YELLOW,
+        )
     return server
 
 
-def get_database_info(dependency_file) -> DatabaseEnum:
+def get_database_info(dependency_file: str) -> DatabaseEnum:
     """
     Get the database info from the dependency file.
 
     :param dependency_file:
     :return: The database type.
     """
-    if check_for_keyword_in_file(dependency_file, "psycopg", "#"):
+    typer.secho(
+        f"[INFO] Check for DATABASE in {dependency_file}", fg=typer.colors.GREEN
+    )
+    if check_for_keyword_in_file(
+        dependency_file, "psycopg", "#"
+    ) or check_for_keyword_in_file(dependency_file, "psycopg2", "#"):
         database = DatabaseEnum.postgres
+        typer.secho(
+            f"[INFO] Postgres was found in {dependency_file}", fg=typer.colors.GREEN
+        )
     else:
         database = DatabaseEnum.sqlite
     return database
@@ -154,16 +186,26 @@ def get_dependency_config(directory: str) -> DependencyConfig:
     if find_file_same_dir("Pipfile", directory):
         dependency_manager = DependencyManagerPackageEnum.pipenv
         dependency_file = "Pipfile"
+        typer.secho("[INFO] 'Pipfile' was found.", fg=typer.colors.GREEN)
     elif find_file_same_dir("pyproject.toml", directory):
         dependency_manager = DependencyManagerPackageEnum.poetry
         dependency_file = "pyproject.toml"
+        typer.secho("[INFO] 'pyproject.toml' was found.", fg=typer.colors.GREEN)
+    elif find_file_same_dir("requirements.txt", directory):
+        dependency_manager = DependencyManagerPackageEnum.pip
+        dependency_file = "requirements.txt"
+        typer.secho("[INFO] 'requirements.txt' was found.", fg=typer.colors.GREEN)
     else:
+        typer.secho(
+            "[WARNING] No dependency file was found. 'requirements.txt' is used instead.",
+            fg=typer.colors.YELLOW,
+        )
         dependency_manager = DependencyManagerPackageEnum.pip
         dependency_file = "requirements.txt"
 
-    database = get_database_info(dependency_file)
+    database = get_database_info(f"{directory}/{dependency_file}")
 
-    server = get_server_info(dependency_file)
+    server = get_server_info(f"{directory}/{dependency_file}")
 
     return DependencyConfig(
         manager=dependency_manager,

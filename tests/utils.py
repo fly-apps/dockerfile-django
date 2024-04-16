@@ -12,7 +12,6 @@ def copy_dir_to_tmp_path(scenario_dir, tmp_path):
             continue
         s = os.path.join(scenario_dir, item)
         d = os.path.join(tmp_path, item)
-        print(f"Copying {s} to {d}")
         if os.path.isdir(s):
             shutil.copytree(s, d, dirs_exist_ok=True)
         else:
