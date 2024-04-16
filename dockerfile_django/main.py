@@ -76,6 +76,7 @@ class OtherConfig(BaseModel):
 
 
 class DjangoProjectConfig(BaseModel):
+    dir: str = "."
     python_version: str = DEFAULT_PYTHON_VERSION
     is_python_version_pinned: bool = False
     dependency_config: DependencyConfig
@@ -98,6 +99,7 @@ class DjangoProjectExtractor:
         config = get_project_config(self.directory)
 
         return DjangoProjectConfig(
+            dir=self.directory,
             python_version=python_partial_version,
             settings_config=settings_config,
             dependency_config=dependency_config,
@@ -192,31 +194,27 @@ def get_settings_config(directory: str) -> SettingsConfig:
     """
     settings_files = find_settings_files(directory)
 
-    if settings_files:
-        if len(settings_files) > 1:
-            typer.secho(
-                f"[WARNING] Multiple 'settings.py' files were found in your Django project: ",
-                fg=typer.colors.YELLOW,
-            )
-            typer.secho(
-                f"{', '.join(str(settings_file) for settings_file in settings_files)}",
-                fg=typer.colors.BLUE,
-            )
-            typer.secho(
-                f"[WARNING] It's not recommended to have multiple 'settings.py' files. "
-                f"Instead, you can have a 'settings/' directory with the settings files according to the different "
-                f"environments (e.g. local.py, staging.py, production.py). "
-                f"In this case, you can specify which settings file to use when running the Django project by "
-                f"setting the 'DJANGO_SETTINGS_MODULE' environment variable to the corresponding settings file.",
-                fg=typer.colors.YELLOW,
-            )
-    else:
-        typer.secho("[ERROR] No 'settings.py' files were found.", fg=typer.colors.RED)
-        raise typer.Abort()
+    if len(settings_files) > 1:
+        typer.secho(
+            f"[WARNING] Multiple 'settings.py' files were found in your Django project: ",
+            fg=typer.colors.YELLOW,
+        )
+        typer.secho(
+            f"{', '.join(str(settings_file) for settings_file in settings_files)}",
+            fg=typer.colors.BLUE,
+        )
+        typer.secho(
+            f"[WARNING] It's not recommended to have multiple 'settings.py' files. "
+            f"Instead, you can have a 'settings/' directory with the settings files according to the different "
+            f"environments (e.g. local.py, staging.py, production.py). "
+            f"In this case, you can specify which settings file to use when running the Django project by "
+            f"setting the 'DJANGO_SETTINGS_MODULE' environment variable to the corresponding settings file.",
+            fg=typer.colors.YELLOW,
+        )
 
     settings_file = settings_files[0]
     typer.secho(
-        f"[INFO] Extracting config from '{settings_file}'...", fg=typer.colors.GREEN
+        f"[INFO] Extracting config from '{settings_file}'", fg=typer.colors.GREEN
     )
 
     has_collectstatic = check_for_keyword_in_file(settings_file, "STATIC_ROOT", "#")
@@ -352,13 +350,13 @@ def get_python_info() -> tuple[str, bool]:
 
         if current_version < latest_supported_version:
             typer.secho(
-                    f"[WARNING] It looks like you have Python {version_str} installed, but it has reached its "
-                    f"end of support. Using Python {PYTHON_LATEST_SUPPORTED_VERSION} to build your image instead."
-                    f"Make sure to update the Dockerfile to use an image that is compatible with the Python "
-                    f"version you are using. We highly recommend that you update your application to use Python "
-                    f"{PYTHON_LATEST_SUPPORTED_VERSION} or newer. "
-                    f"(https://devguide.python.org/versions/#supported-versions)",
-                    fg=typer.colors.YELLOW,
+                f"[WARNING] It looks like you have Python {version_str} installed, but it has reached its "
+                f"end of support. Using Python {PYTHON_LATEST_SUPPORTED_VERSION} to build your image instead."
+                f"Make sure to update the Dockerfile to use an image that is compatible with the Python "
+                f"version you are using. We highly recommend that you update your application to use Python "
+                f"{PYTHON_LATEST_SUPPORTED_VERSION} or newer. "
+                f"(https://devguide.python.org/versions/#supported-versions)",
+                fg=typer.colors.YELLOW,
             )
             major, minor = PYTHON_LATEST_SUPPORTED_VERSION.split(".")[:2]
             partial_version = f"{major}.{minor}"
@@ -367,16 +365,16 @@ def get_python_info() -> tuple[str, bool]:
 
         if is_pinned:
             typer.secho(
-                    f"[WARNING] It looks like you have Python {version_str} installed, which is not an official "
-                    f"release. This version is being explicitly pinned in the generated Dockerfile, and should be "
-                    f"changed to an official release before deploying to production.",
-                    fg=typer.colors.YELLOW,
+                f"[WARNING] It looks like you have Python {version_str} installed, which is not an official "
+                f"release. This version is being explicitly pinned in the generated Dockerfile, and should be "
+                f"changed to an official release before deploying to production.",
+                fg=typer.colors.YELLOW,
             )
         else:
             typer.secho(
-                    f"[INFO] Python {version_str} was detected. 'python:{partial_version}-slim-bullseye'"
-                    f" image will be set in the Dockerfile.",
-                    fg=typer.colors.GREEN,
+                f"[INFO] Python {version_str} was detected. 'python:{partial_version}-slim-bullseye'"
+                f" image will be set in the Dockerfile.",
+                fg=typer.colors.GREEN,
             )
 
         return partial_version, is_pinned
@@ -415,7 +413,7 @@ def find_settings_files(start_path=".") -> list[Path]:
         settings_files = find_files("*settings/*prod*.py", start_path)
         if not settings_files:
             typer.secho(
-                "[ERROR] No 'settings.py' files were found", fg=typer.colors.RED
+                "[ERROR] No 'settings.py' files were found.", fg=typer.colors.RED
             )
             raise typer.Abort()
 
@@ -457,7 +455,7 @@ class DockerfileGenerator:
             dj=self.project_info,
         )
 
-        output_path = os.path.join(os.getcwd(), output_name)
+        output_path = os.path.join(self.project_info.dir, output_name)
 
         if os.path.exists(output_path) and not self.force:
             with open(output_path, "r") as f:
@@ -486,14 +484,19 @@ class DockerfileGenerator:
             )
             colorize_diff(output_name, existing_content, generated_lines)
 
-            if not (self.force or typer.confirm(typer.style("\nOverwrite?", fg=typer.colors.YELLOW, bold=True))):
+            if not (
+                self.force
+                or typer.confirm(
+                    typer.style("\nOverwrite?", fg=typer.colors.YELLOW, bold=True)
+                )
+            ):
                 typer.echo(f"[INFO] Skip overwriting the existing {output_name}...")
                 return
 
         with open(output_path, "w") as f:
             f.write(generated_content)
             typer.secho(
-                f"[INFO] Generated {output_name} was saved successfully!",
+                f"[INFO] Generated '{output_path}' was saved successfully!",
                 fg=typer.colors.GREEN,
             )
 
@@ -520,7 +523,8 @@ def generate(
         fg=typer.colors.MAGENTA,
     )
     typer.secho(
-        "[INFO] Extracting Django project config info....", fg=typer.colors.GREEN
+        f"[INFO] Extracting Django project config info from '{directory}'",
+        fg=typer.colors.GREEN,
     )
     django_project = DjangoProjectExtractor(directory)
     django_project_info = django_project.extract_project_info()
