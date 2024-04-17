@@ -119,7 +119,14 @@ def get_server_info(dependency_file: str) -> ServerEnum:
     :param dependency_file:
     :return: The server type.
     """
-    if check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
+    if check_for_keyword_in_file(dependency_file, "uvicorn", "#") and \
+            check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
+        server = ServerEnum.uvicorn
+        typer.secho(
+            f"[INFO] Uvicorn Web Server was found in {dependency_file}",
+            fg=typer.colors.GREEN,
+        )
+    elif check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.gunicorn
         typer.secho(
             f"[INFO] Gunicorn Web Server was found in {dependency_file}",
@@ -135,12 +142,6 @@ def get_server_info(dependency_file: str) -> ServerEnum:
         server = ServerEnum.hypercorn
         typer.secho(
             f"[INFO] Hypercorn Web Server was found in {dependency_file}",
-            fg=typer.colors.GREEN,
-        )
-    elif check_for_keyword_in_file(dependency_file, "uvicorn", "#"):
-        server = ServerEnum.uvicorn
-        typer.secho(
-            f"[INFO] Uvicorn Web Server was found in {dependency_file}",
             fg=typer.colors.GREEN,
         )
     elif check_for_keyword_in_file(dependency_file, "granian", "#"):
