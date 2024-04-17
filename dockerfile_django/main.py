@@ -39,8 +39,11 @@ class DependencyManagerPackageEnum(str, Enum):
 
 
 class DatabaseEnum(str, Enum):
+    no_db = "no_db"
     sqlite = "sqlite"
     postgres = "postgres"
+    mysql = "mysql"
+    oracle = "oracle"
 
 
 class ServerTypeEnum(str, Enum):
@@ -60,7 +63,7 @@ class DependencyConfig(BaseModel):
     manager: DependencyManagerPackageEnum = DependencyManagerPackageEnum.pip
     dependency_file_name: str = "requirements.txt"
     server: ServerEnum = ServerEnum.gunicorn
-    database: DatabaseEnum
+    database: DatabaseEnum = DatabaseEnum.no_db
 
 
 class SettingsConfig(BaseModel):
@@ -148,7 +151,8 @@ def get_server_info(dependency_file: str) -> ServerEnum:
     else:
         server = ServerEnum.gunicorn
         typer.secho(
-            f"[WARNING] No Web Server was found in {dependency_file}. Gunicorn Web Server is used instead.",
+            f"[WARNING] No known Web Server was found in {dependency_file}. Gunicorn Web Server is used instead."
+            f"Make sure to update the generated Dockerfile with the correct Web Server.",
             fg=typer.colors.YELLOW,
         )
     return server
@@ -171,8 +175,9 @@ def get_database_info(dependency_file: str) -> DatabaseEnum:
         typer.secho(
             f"[INFO] Postgres was found in {dependency_file}", fg=typer.colors.GREEN
         )
+    # TODO: Add more database checks (e.g. sqlite, mysql, oracle, etc.)
     else:
-        database = DatabaseEnum.sqlite
+        database = DatabaseEnum.no_db
     return database
 
 

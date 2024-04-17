@@ -11,28 +11,30 @@ runner = CliRunner()
 
 
 def get_scenario_dirs():
-    base_dir = "tests/test_cases/dockerfile_generated/"
-    return [
-        os.path.join(base_dir, d)
-        for d in os.listdir(base_dir)
-        if os.path.isdir(os.path.join(base_dir, d))
-    ]
+    base_dir = "tests/test_cases/"
+    scenario_dirs = []
+
+    for test_folder in os.listdir(base_dir):
+        if test_folder == "dockerfile_aborted":
+            continue
+        test_folder_path = os.path.join(base_dir, test_folder)
+        if os.path.isdir(test_folder_path):
+            for specific_dir in os.listdir(test_folder_path):
+                specific_dir_path = os.path.join(test_folder_path, specific_dir)
+                if os.path.isdir(specific_dir_path):
+                    scenario_dirs.append(specific_dir_path)
+    return scenario_dirs
 
 
 @pytest.mark.parametrize("scenario_dir", get_scenario_dirs())
 def test_dockerfile_generation(scenario_dir, tmp_path):
     with patch("platform.python_version", return_value=PYTHON_VERSION):
-        # Copy the scenario directory to a temporary directory
         copy_dir_to_tmp_path(scenario_dir, tmp_path)
 
         result = runner.invoke(cli, ["generate", "--dir", f"{tmp_path}", "--force"])
 
-        print(result.stdout)
-
-        # The expected Dockerfile is still in 'scenario_dir', also named 'Dockerfile'
         expected_dockerfile_path = os.path.join(scenario_dir, "Dockerfile")
 
-        # The generated Dockerfile will be in 'tmp_path', named 'Dockerfile'
         generated_dockerfile_path = tmp_path / "Dockerfile"
 
         with open(expected_dockerfile_path, "r") as file:
@@ -41,10 +43,6 @@ def test_dockerfile_generation(scenario_dir, tmp_path):
         with open(generated_dockerfile_path, "r") as file:
             generated_dockerfile_contents = file.read()
 
-        print(generated_dockerfile_contents)
-        print(expected_dockerfile_contents)
-
-        # Assert to compare the generated Dockerfile in 'tmp_path' with the expected one in 'scenario_dir'
         assert (
             generated_dockerfile_contents == expected_dockerfile_contents
         ), f"Mismatch in Dockerfile for {scenario_dir}"
