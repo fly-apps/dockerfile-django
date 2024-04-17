@@ -92,11 +92,12 @@ class DjangoProjectExtractor:
     Extractor for Django project config info.
     """
 
-    def __init__(self, directory: str = ".") -> None:
+    def __init__(self, python_version: str, directory: str = ".") -> None:
         self.directory = directory
+        self.python_version = python_version
 
     def extract_project_info(self) -> DjangoProjectConfig:
-        python_partial_version, pinned = get_python_info()
+        python_partial_version, pinned = (self.python_version, False) if self.python_version else get_python_info()
         settings_config = get_settings_config(self.directory)
         dependency_config = get_dependency_config(self.directory)
         config = get_project_config(self.directory)
@@ -405,7 +406,7 @@ def get_python_info() -> tuple[str, bool]:
                 f"(https://devguide.python.org/versions/#supported-versions)",
                 fg=typer.colors.YELLOW,
             )
-            major, minor = PYTHON_LATEST_SUPPORTED_VERSION.split(".")[:2]
+            major, minor = DEFAULT_PYTHON_VERSION.split(".")
             partial_version = f"{major}.{minor}"
         else:
             partial_version = f"{major}.{minor}"
@@ -426,7 +427,7 @@ def get_python_info() -> tuple[str, bool]:
 
         return partial_version, is_pinned
     else:
-        return PYTHON_LATEST_RELEASED_VERSION.split(".")[:2], False
+        return DEFAULT_PYTHON_VERSION.split("."), False
 
 
 def find_server_files(start_path=".") -> tuple[list[Path], list[Path]]:
@@ -561,6 +562,9 @@ def generate(
         "--diff",
         help="Display differences between current and generated Dockerfile",
     ),
+    python_version: str = typer.Option(
+        None, "--pyver", help="Python version to use in the Dockerfile"
+    ),
 ):
     """
     Generate a Dockerfile for Django projects.
@@ -573,7 +577,7 @@ def generate(
         f"[INFO] Extracting Django project config info from '{directory}'",
         fg=typer.colors.GREEN,
     )
-    django_project = DjangoProjectExtractor(directory)
+    django_project = DjangoProjectExtractor(python_version, directory)
     django_project_info = django_project.extract_project_info()
     generator = DockerfileGenerator(django_project_info, force, diff)
     generator.run()
