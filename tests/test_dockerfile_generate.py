@@ -13,15 +13,16 @@ PYTHON_NOT_SUPPORTED = "3.7.17"
 PYTHON_SUPPORTED = "3.11.4"  # make sure to keep this updated to a supported version
 PYTHON_PINNED = "3.10.0b1"
 
+TEST_CASE_DIR = "tests/test_cases/"
+
 
 def get_scenario_dirs():
-    base_dir = "tests/test_cases/"
     scenario_dirs = []
 
-    for test_folder in os.listdir(base_dir):
+    for test_folder in os.listdir(TEST_CASE_DIR):
         if test_folder == "dockerfile_aborted":
             continue
-        test_folder_path = os.path.join(base_dir, test_folder)
+        test_folder_path = os.path.join(TEST_CASE_DIR, test_folder)
         if os.path.isdir(test_folder_path):
             for specific_dir in os.listdir(test_folder_path):
                 specific_dir_path = os.path.join(test_folder_path, specific_dir)

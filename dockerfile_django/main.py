@@ -182,6 +182,10 @@ def get_database_info(dependency_file: str) -> DatabaseEnum:
         )
     # TODO: Add more database checks (e.g. sqlite, mysql, oracle, etc.)
     else:
+        typer.secho(
+            "[WARNING] No known database was found.",
+            fg=typer.colors.YELLOW,
+        )
         database = DatabaseEnum.no_db
     return database
 
@@ -272,13 +276,14 @@ def get_settings_config(directory: str) -> SettingsConfig:
     has_collectstatic = check_for_keyword_in_file(settings_file, "STATIC_ROOT", "#")
 
     has_random_secret_key = check_for_keyword_in_file(
-        settings_file, "default=get_random_secret_key()", "#"
+        settings_file, "get_random_secret_key()", "#"
     )
     existing_dockerfile = get_dockerfile(directory)
 
     # If Dockerfile already exists and has a random secret key, extract it.
     if existing_dockerfile and not has_random_secret_key:
-        random_secret_key = extract_secret_key_from_dockerfile()
+        dockerfile_path = Path(f"{directory}/Dockerfile")
+        random_secret_key = extract_secret_key_from_dockerfile(dockerfile_path)
         if not random_secret_key:
             random_secret_key = get_random_secret_key(50)
     elif not has_random_secret_key:
@@ -373,7 +378,7 @@ def get_project_config(directory: str) -> OtherConfig:
         raise typer.Abort()
 
     return OtherConfig(
-        server_type=ServerTypeEnum.asgi if asgi_found else ServerTypeEnum.wsgi,
+        server_type=ServerTypeEnum.wsgi if wsgi_found else ServerTypeEnum.asgi,
         project_name=asgi_name if asgi_found else wsgi_name if wsgi_found else "demo",
     )
 

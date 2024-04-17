@@ -107,7 +107,7 @@ def get_random_secret_key(length=50) -> str:
     return "".join(secrets.choice(chars) for i in range(length))
 
 
-def extract_secret_key_from_dockerfile() -> str:
+def extract_secret_key_from_dockerfile(dockerfile_path: str) -> str:
     """
     Extracts the secret key from the Dockerfile.
 
@@ -116,7 +116,7 @@ def extract_secret_key_from_dockerfile() -> str:
     pattern = r"^ENV SECRET_KEY\s+(.*)$"
 
     try:
-        with open("Dockerfile", "r") as file:
+        with open(dockerfile_path, "r") as file:
             for line in file:
                 match = re.match(pattern, line.strip())
                 if match:
