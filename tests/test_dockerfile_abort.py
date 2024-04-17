@@ -15,7 +15,7 @@ def test_generate_not_supported_python():
     with patch("platform.python_version") as mock_version:
         mock_version.return_value = PYTHON_NOT_SUPPORTED
         result = runner.invoke(
-            cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_1"]
+            cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_2"]
         )
         assert result.exit_code == 1
         assert (
@@ -28,7 +28,7 @@ def test_generate_supported_python():
     with patch("platform.python_version") as mock_version:
         mock_version.return_value = PYTHON_SUPPORTED
         result = runner.invoke(
-            cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_1"]
+            cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_2"]
         )
         assert result.exit_code == 1
         assert f"[INFO] Python {PYTHON_SUPPORTED} was detected." in result.stdout
@@ -38,7 +38,7 @@ def test_generate_pinned_supported_python():
     with patch("platform.python_version") as mock_version:
         mock_version.return_value = PYTHON_PINNED
         result = runner.invoke(
-            cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_1"]
+            cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_2"]
         )
         assert result.exit_code == 1
         assert (
