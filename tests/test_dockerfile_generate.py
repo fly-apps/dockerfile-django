@@ -55,8 +55,7 @@ def test_dockerfile_generation(scenario_dir, tmp_path):
 
 
 def test_generate_not_supported_python():
-    with patch("platform.python_version") as mock_version:
-        mock_version.return_value = PYTHON_NOT_SUPPORTED
+    with patch("platform.python_version", return_value=PYTHON_NOT_SUPPORTED):
         result = runner.invoke(
             cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_2"]
         )
@@ -68,8 +67,7 @@ def test_generate_not_supported_python():
 
 
 def test_generate_supported_python():
-    with patch("platform.python_version") as mock_version:
-        mock_version.return_value = PYTHON_SUPPORTED
+    with patch("platform.python_version", return_value=PYTHON_SUPPORTED):
         result = runner.invoke(
             cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_2"]
         )
@@ -78,8 +76,7 @@ def test_generate_supported_python():
 
 
 def test_generate_pinned_supported_python():
-    with patch("platform.python_version") as mock_version:
-        mock_version.return_value = PYTHON_PINNED
+    with patch("platform.python_version", return_value=PYTHON_PINNED):
         result = runner.invoke(
             cli, ["generate", "--dir", "tests/test_cases/dockerfile_aborted/scenario_2"]
         )

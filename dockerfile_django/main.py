@@ -97,7 +97,9 @@ class DjangoProjectExtractor:
         self.python_version = python_version
 
     def extract_project_info(self) -> DjangoProjectConfig:
-        python_partial_version, pinned = (self.python_version, False) if self.python_version else get_python_info()
+        python_partial_version, pinned = (
+            (self.python_version, False) if self.python_version else get_python_info()
+        )
         settings_config = get_settings_config(self.directory)
         dependency_config = get_dependency_config(self.directory)
         config = get_project_config(self.directory)
@@ -119,8 +121,9 @@ def get_server_info(dependency_file: str) -> ServerEnum:
     :param dependency_file:
     :return: The server type.
     """
-    if check_for_keyword_in_file(dependency_file, "uvicorn", "#") and \
-            check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
+    if check_for_keyword_in_file(
+        dependency_file, "uvicorn", "#"
+    ) and check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.uvicorn
         typer.secho(
             f"[INFO] Uvicorn Web Server was found in {dependency_file}",
