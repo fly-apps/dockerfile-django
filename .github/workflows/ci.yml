@@ -1,0 +1,27 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  # run eslint and compare outputs with expected results
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.2'
+      - uses: abatilo/actions-poetry@v2
+      - run: poetry install
+      - run: poetry run pytest -v
+
+  # sample tests to see if they can be built
+  test-builds:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        test_case:
+          - settings/production_settings
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/setup-buildx-action@v2
+      - run: docker buildx build . --build-arg PYTHON_VERSION=3.12.3
+        working-directory: tests/test_cases/${{ matrix.test_case }}
