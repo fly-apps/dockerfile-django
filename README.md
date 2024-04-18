@@ -110,3 +110,12 @@ cd dockerfile-django/
 poetry shell
 pytest
 ```
+
+### Capturing test results
+
+To assist with this process, outputs of tests can be captured automatically. This is useful when adding new tests and when making a change that affects many tests. Be sure to inspect the output (e.g., by using git diff) before committing.
+
+Capturing test results is done by setting the following environment variable before running `pytest`:
+
+    TEST_CAPTURE=1
+    
