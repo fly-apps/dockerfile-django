@@ -67,12 +67,17 @@ def find_files(pattern, start_path="."):
     """
     start_dir = Path(start_path)
     files = []
+    closest_file = None
+    closest_distance = float('inf')
 
     for path in start_dir.rglob(pattern):
         if "site-packages" not in path.parts:
             files.append(path)
-
-    return files
+        distance = len(path.relative_to(start_dir).parts)
+        if distance < closest_distance:
+            closest_file = path
+            closest_distance = distance
+    return files, closest_file
 
 
 def check_for_keyword_in_file(file_path, keyword, skip_string_starts_with=""):

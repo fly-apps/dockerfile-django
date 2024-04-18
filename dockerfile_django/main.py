@@ -248,7 +248,7 @@ def get_settings_config(directory: str = ".") -> SettingsConfig:
     :param directory: The directory path.
     :return: The settings file.
     """
-    settings_files = find_settings_files(directory)
+    settings_files, closest_settings = find_settings_files(directory)
 
     if len(settings_files) > 1:
         typer.secho(
@@ -268,15 +268,15 @@ def get_settings_config(directory: str = ".") -> SettingsConfig:
             fg=typer.colors.YELLOW,
         )
 
-    settings_file = settings_files[0]
+    # settings_file = settings_files[0]
     typer.secho(
-        f"[INFO] Extracting config from '{settings_file}'", fg=typer.colors.GREEN
+        f"[INFO] Extracting config from '{closest_settings}'", fg=typer.colors.GREEN
     )
 
-    has_collectstatic = check_for_keyword_in_file(settings_file, "STATIC_ROOT", "#")
+    has_collectstatic = check_for_keyword_in_file(closest_settings, "STATIC_ROOT", "#")
 
     has_random_secret_key = check_for_keyword_in_file(
-        settings_file, "get_random_secret_key()", "#"
+        closest_settings, "get_random_secret_key()", "#"
     )
     existing_dockerfile = get_dockerfile(directory)
 
@@ -312,11 +312,12 @@ def get_project_config(directory: str = ".") -> OtherConfig:
     """
     wsgi_found = False
     asgi_found = False
-    wsgi_files, asgi_files = find_server_files(directory)
+    wsgi_files, closest_wsgi, asgi_files, closest_asgi = find_server_files(directory)
+    print(wsgi_files, closest_wsgi, asgi_files, closest_asgi)
 
     if wsgi_files:
         wsgi_found = True
-        wsgi_name = wsgi_files[0].parent.name
+        wsgi_name = closest_wsgi.parent.name
         if len(wsgi_files) > 1:
             typer.secho(
                 f"[WARNING] Multiple 'wsgi.py' files were found in your Django project: ",
@@ -334,7 +335,7 @@ def get_project_config(directory: str = ".") -> OtherConfig:
 
     if asgi_files:
         asgi_found = True
-        asgi_name = asgi_files[0].parent.name
+        asgi_name = closest_asgi.parent.name
         if len(asgi_files) > 1:
             typer.secho(
                 f"[WARNING] Multiple 'asgi.py' files were found in your Django project: ",
@@ -355,16 +356,15 @@ def get_project_config(directory: str = ".") -> OtherConfig:
             f"[WARNING] Both 'wsgi.py' and 'asgi.py' files were found in your Django project.",
             fg=typer.colors.YELLOW,
         )
-        settings_files = find_settings_files(directory)
-        settings_file = settings_files[0]
-        if check_for_keyword_in_file(settings_file, "WSGI_APPLICATION", "#"):
+        settings_files, closest_settings = find_settings_files(directory)
+        if check_for_keyword_in_file(closest_settings, "WSGI_APPLICATION", "#"):
             asgi_found = False
             typer.secho(
                 f"[WARNING] 'WSGI_APPLICATION' setting was found in your 'settings.py' file. Using WSGI server in the "
                 f"Dockerfile. If that's not correct, make sure to update your Dockerfile to use an ASGI server.",
                 fg=typer.colors.YELLOW,
             )
-        if check_for_keyword_in_file(settings_file, "ASGI_APPLICATION", "#"):
+        if check_for_keyword_in_file(closest_settings, "ASGI_APPLICATION", "#"):
             wsgi_found = False
             typer.secho(
                 f"[WARNING] 'ASGI_APPLICATION' setting was found in your 'settings.py' file. Using WSGI server in the "
@@ -447,14 +447,14 @@ def find_server_files(start_path: str = ".") -> tuple[list[Path], list[Path]]:
     :param start_path: The directory to start the search from.
     :return: A tuple of lists containing Path objects pointing to 'wsgi.py' and 'asgi.py' files.
     """
-    wsgi_files = find_files("wsgi.py", start_path)
-    asgi_files = find_files("asgi.py", start_path)
+    wsgi_files, closest_wsgi = find_files("wsgi.py", start_path)
+    asgi_files, closest_asgi = find_files("asgi.py", start_path)
 
     if not (wsgi_files or asgi_files):
         typer.secho(
             "[ERROR] No 'wsgi.py' or 'asgi.py' files were found.", fg=typer.colors.RED
         )
-    return wsgi_files, asgi_files
+    return wsgi_files, closest_wsgi, asgi_files, closest_asgi
 
 
 def find_settings_files(start_path: str = ".") -> list[Path]:
@@ -465,9 +465,9 @@ def find_settings_files(start_path: str = ".") -> list[Path]:
     :param start_path: The directory to start the search from.
     :return: A list of Path objects pointing to 'settings.py' files.
     """
-    settings_files = find_files("*settings*.py", start_path)
+    settings_files, closest_settings = find_files("*settings*.py", start_path)
     if not settings_files:
-        settings_files = find_files("*settings/*prod*.py", start_path)
+        settings_files, closest_settings = find_files("*settings/*prod*.py", start_path)
         if not settings_files:
             typer.secho(
                 "[ERROR] No 'settings.py' files were found.", fg=typer.colors.RED
@@ -476,9 +476,9 @@ def find_settings_files(start_path: str = ".") -> list[Path]:
 
     for file in settings_files:
         if file.name == "settings.py":
-            return [Path(file)]
+            return [Path(file)], file
 
-    return settings_files
+    return settings_files, closest_settings
 
 
 class DockerfileGenerator:
