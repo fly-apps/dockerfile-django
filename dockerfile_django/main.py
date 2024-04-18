@@ -190,7 +190,7 @@ def get_database_info(dependency_file: str) -> DatabaseEnum:
     return database
 
 
-def get_dependency_config(directory: str) -> DependencyConfig:
+def get_dependency_config(directory: str = ".") -> DependencyConfig:
     """
     Extract the dependency manager from the directory path.
 
@@ -229,7 +229,7 @@ def get_dependency_config(directory: str) -> DependencyConfig:
     )
 
 
-def get_dockerfile(directory: str) -> bool:
+def get_dockerfile(directory: str = ".") -> bool:
     """
     Find the Dockerfile in the directory.
 
@@ -241,7 +241,7 @@ def get_dockerfile(directory: str) -> bool:
     return False
 
 
-def get_settings_config(directory: str) -> SettingsConfig:
+def get_settings_config(directory: str = ".") -> SettingsConfig:
     """
     Extract config of the 'settings.py' file from the directory path.
 
@@ -303,7 +303,7 @@ def get_settings_config(directory: str) -> SettingsConfig:
     )
 
 
-def get_project_config(directory: str) -> OtherConfig:
+def get_project_config(directory: str = ".") -> OtherConfig:
     """
     Extract other config of the project from the directory path.
 
@@ -439,7 +439,7 @@ def get_python_info() -> tuple[str, bool]:
         return DEFAULT_PYTHON_VERSION.split("."), False
 
 
-def find_server_files(start_path=".") -> tuple[list[Path], list[Path]]:
+def find_server_files(start_path: str = ".") -> tuple[list[Path], list[Path]]:
     """
     Search for 'wsgi.py.py' and 'asgi.py' files starting from 'start_path',
     excluding any paths that contain 'site-packages'.
@@ -447,8 +447,8 @@ def find_server_files(start_path=".") -> tuple[list[Path], list[Path]]:
     :param start_path: The directory to start the search from.
     :return: A tuple of lists containing Path objects pointing to 'wsgi.py' and 'asgi.py' files.
     """
-    wsgi_files = find_files("*wsgi.py", start_path)
-    asgi_files = find_files("*asgi.py", start_path)
+    wsgi_files = find_files("wsgi.py", start_path)
+    asgi_files = find_files("asgi.py", start_path)
 
     if not (wsgi_files or asgi_files):
         typer.secho(
@@ -457,7 +457,7 @@ def find_server_files(start_path=".") -> tuple[list[Path], list[Path]]:
     return wsgi_files, asgi_files
 
 
-def find_settings_files(start_path=".") -> list[Path]:
+def find_settings_files(start_path: str = ".") -> list[Path]:
     """
     Search for 'settings.py' files starting from 'start_path',
     excluding any paths that contain 'site-packages'.
