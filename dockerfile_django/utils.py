@@ -11,10 +11,10 @@ def colorize_diff(output_name: str, current_file: list, generated_file: list):
     """
     Prints a colorized diff of two sets of lines to the terminal, ignoring blank lines.
 
-    Parameters:
-    - output_name: The name of the file being compared.
-    - current_file: The original lines of the file.
-    - generated_file: The generated lines of the file.
+    Args:
+        - output_name: The name of the file being compared.
+        - current_file: The original lines of the file.
+        - generated_file: The generated lines of the file.
     """
 
     diff = difflib.ndiff(
@@ -57,22 +57,27 @@ def find_file_same_dir(pattern, path=".") -> Path:
         return None
 
 
-def find_files(pattern, start_path="."):
+def find_files(pattern, start_path=".") -> tuple[list[Path], Path]:
     """
     Find all files with the specified pattern in the given directory.
 
     :param pattern: The pattern to search for.
     :param start_path: The directory path to search in. Defaults to '.' (current directory).
-    :return:
+    :return: A list of paths to the found files and the closest file path.
     """
     start_dir = Path(start_path)
     files = []
+    closest_file = None
+    closest_distance = float("inf")
 
     for path in start_dir.rglob(pattern):
         if "site-packages" not in path.parts:
             files.append(path)
-
-    return files
+        distance = len(path.relative_to(start_dir).parts)
+        if distance < closest_distance:
+            closest_file = path
+            closest_distance = distance
+    return files, closest_file
 
 
 def check_for_keyword_in_file(file_path, keyword, skip_string_starts_with=""):
@@ -107,7 +112,7 @@ def get_random_secret_key(length=50) -> str:
     return "".join(secrets.choice(chars) for i in range(length))
 
 
-def extract_secret_key_from_dockerfile() -> str:
+def extract_secret_key_from_dockerfile(dockerfile_path: str) -> str:
     """
     Extracts the secret key from the Dockerfile.
 
@@ -116,7 +121,7 @@ def extract_secret_key_from_dockerfile() -> str:
     pattern = r"^ENV SECRET_KEY\s+(.*)$"
 
     try:
-        with open("Dockerfile", "r") as file:
+        with open(dockerfile_path, "r") as file:
             for line in file:
                 match = re.match(pattern, line.strip())
                 if match:
