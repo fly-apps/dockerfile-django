@@ -63,6 +63,20 @@ poetry run dockerfile-django generate --help
 ╰───────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
+### Code Formatting
+
+We use [Black](https://black.readthedocs.io/en/stable/) to automatically format our code according to consistent style guidelines. Black ensures that all code contributions adhere to a unified code style, promoting readability and maintainability throughout the project.
+
+Black is already installed in the project's virtual environment.
+
+Once installed, you can format your code using Black by running it on your project directory:
+
+```shell
+poetry run black .
+```
+
+This command will recursively format all Python files in the current directory and its subdirectories according to Black's style guidelines.
+
 ### Generating a Dockerfile for a Test Case
 
 To generate a Dockerfile for a test case, you can use the following command:
@@ -71,7 +85,7 @@ To generate a Dockerfile for a test case, you can use the following command:
 poetry run dockerfile-django generate --dir tests/test_cases/server/gunicorn/ --pyver "3.12"
 ```
 
-## Running Tests
+### Running Tests
 
 To run the tests, you can follow the steps below:
 
