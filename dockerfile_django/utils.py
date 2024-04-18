@@ -11,10 +11,10 @@ def colorize_diff(output_name: str, current_file: list, generated_file: list):
     """
     Prints a colorized diff of two sets of lines to the terminal, ignoring blank lines.
 
-    Parameters:
-    - output_name: The name of the file being compared.
-    - current_file: The original lines of the file.
-    - generated_file: The generated lines of the file.
+    Args:
+        - output_name: The name of the file being compared.
+        - current_file: The original lines of the file.
+        - generated_file: The generated lines of the file.
     """
 
     diff = difflib.ndiff(
@@ -57,18 +57,18 @@ def find_file_same_dir(pattern, path=".") -> Path:
         return None
 
 
-def find_files(pattern, start_path="."):
+def find_files(pattern, start_path=".") -> tuple[list[Path], Path]:
     """
     Find all files with the specified pattern in the given directory.
 
     :param pattern: The pattern to search for.
     :param start_path: The directory path to search in. Defaults to '.' (current directory).
-    :return:
+    :return: A list of paths to the found files and the closest file path.
     """
     start_dir = Path(start_path)
     files = []
     closest_file = None
-    closest_distance = float('inf')
+    closest_distance = float("inf")
 
     for path in start_dir.rglob(pattern):
         if "site-packages" not in path.parts:
