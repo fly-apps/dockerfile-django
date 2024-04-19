@@ -1,9 +1,9 @@
 {% if dj.is_python_version_pinned -%}
 # TODO: Change to an officially released version of Python before deploying to production.
 {% endif -%}
-ARG PYTHON_VERSION={{ dj.python_version }}-slim-bullseye
+ARG PYTHON_VERSION={{ dj.python_version }}
 
-FROM python:${PYTHON_VERSION}
+FROM python:${PYTHON_VERSION}-slim
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
