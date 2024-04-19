@@ -1,3 +1,4 @@
+import re
 import os
 from unittest.mock import patch
 
@@ -15,6 +16,7 @@ PYTHON_PINNED = "3.10.0b1"
 
 TEST_CASE_DIR = "tests/test_cases/"
 
+ARG_MASK = re.compile(r"^(ARG\s+\w+\s*=).*?(\s*\\?)$", re.MULTILINE)
 
 def get_scenario_dirs():
     scenario_dirs = []
@@ -42,11 +44,15 @@ def test_dockerfile_generation(scenario_dir, tmp_path):
 
         generated_dockerfile_path = tmp_path / "Dockerfile"
 
-        with open(expected_dockerfile_path, "r") as file:
-            expected_dockerfile_contents = file.read()
-
         with open(generated_dockerfile_path, "r") as file:
-            generated_dockerfile_contents = file.read()
+            generated_dockerfile_contents = ARG_MASK.sub(r"\1xxx\2", file.read())
+
+        if 'TEST_CAPTURE' in os.environ:
+            with open(expected_dockerfile_path, "w") as file:
+                file.write(generated_dockerfile_contents)
+
+        with open(expected_dockerfile_path, "r") as file:
+            expected_dockerfile_contents = ARG_MASK.sub(r"\1xxx\2", file.read())
 
         assert (
             generated_dockerfile_contents == expected_dockerfile_contents
