@@ -18,6 +18,7 @@ TEST_CASE_DIR = "tests/test_cases/"
 
 ARG_MASK = re.compile(r"^(ARG\s+\w+\s*=).*?(\s*\\?)$", re.MULTILINE)
 
+
 def get_scenario_dirs():
     scenario_dirs = []
 
@@ -47,7 +48,7 @@ def test_dockerfile_generation(scenario_dir, tmp_path):
         with open(generated_dockerfile_path, "r") as file:
             generated_dockerfile_contents = ARG_MASK.sub(r"\1xxx\2", file.read())
 
-        if 'TEST_CAPTURE' in os.environ:
+        if "TEST_CAPTURE" in os.environ:
             with open(expected_dockerfile_path, "w") as file:
                 file.write(generated_dockerfile_contents)
 
