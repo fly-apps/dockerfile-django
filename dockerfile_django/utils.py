@@ -5,9 +5,12 @@ import typer
 import secrets
 
 from pathlib import Path
+from rich.console import Console
+
+console = Console()
 
 
-def colorize_diff(output_name: str, current_file: list, generated_file: list):
+def colorize_diff(output_name: str, current_file: list, generated_file: list) -> None:
     """
     Prints a colorized diff of two sets of lines to the terminal, ignoring blank lines.
 
@@ -35,7 +38,7 @@ def colorize_diff(output_name: str, current_file: list, generated_file: list):
         elif line.startswith("?"):
             typer.secho(stripped_line, fg=typer.colors.YELLOW)
         else:
-            typer.echo(stripped_line)
+            console.print(stripped_line)
 
 
 def find_file_same_dir(pattern, path=".") -> Path:
@@ -57,7 +60,7 @@ def find_file_same_dir(pattern, path=".") -> Path:
         return None
 
 
-def find_files(pattern, start_path=".") -> tuple[list[Path], Path]:
+def find_files(pattern, start_path: Path = Path(".")) -> tuple[list[Path], Path]:
     """
     Find all files with the specified pattern in the given directory.
 
@@ -65,22 +68,21 @@ def find_files(pattern, start_path=".") -> tuple[list[Path], Path]:
     :param start_path: The directory path to search in. Defaults to '.' (current directory).
     :return: A list of paths to the found files and the closest file path.
     """
-    start_dir = Path(start_path)
     files = []
     closest_file = None
     closest_distance = float("inf")
 
-    for path in start_dir.rglob(pattern):
+    for path in start_path.rglob(pattern):
         if "site-packages" not in path.parts:
             files.append(path)
-        distance = len(path.relative_to(start_dir).parts)
+        distance = len(path.relative_to(start_path).parts)
         if distance < closest_distance:
             closest_file = path
             closest_distance = distance
     return files, closest_file
 
 
-def check_for_keyword_in_file(file_path, keyword, skip_string_starts_with=""):
+def check_for_keyword_in_file(file_path: Path, keyword: str, skip_string_starts_with: str = "") -> bool:
     """
     Check if a keyword is present in a file.
 
@@ -101,7 +103,7 @@ def check_for_keyword_in_file(file_path, keyword, skip_string_starts_with=""):
     return False
 
 
-def get_random_secret_key(length=50) -> str:
+def get_random_secret_key(length: int = 50) -> str:
     """
     Return a 50 character random string usable as a SECRET_KEY setting value.
 

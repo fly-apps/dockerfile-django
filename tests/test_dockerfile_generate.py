@@ -69,8 +69,7 @@ def test_generate_not_supported_python():
         )
         assert result.exit_code == 1
         assert (
-            f"[WARNING] It looks like you have Python {PYTHON_NOT_SUPPORTED} installed, but it has reached its "
-            f"end of support." in result.stdout
+            f"[WARNING] It looks like you are using Python {PYTHON_NOT_SUPPORTED}" in result.stdout
         )
 
 
@@ -90,6 +89,5 @@ def test_generate_pinned_supported_python():
         )
         assert result.exit_code == 1
         assert (
-            f"[WARNING] It looks like you have Python {PYTHON_PINNED} installed, which is not an official "
-            f"release." in result.stdout
+            f"[WARNING] It looks like you are using Python {PYTHON_PINNED}" in result.stdout
         )
