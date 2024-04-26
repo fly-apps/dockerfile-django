@@ -27,10 +27,10 @@ By default, the command will search for Django project files in the current dire
 ### Example
 
 ```shell
-dockerfile-django generate --dir /.../Projects/my-djanogo-project/my_django_app/ --diff --pyver "3.11.4"
+dockerfile-django generate --dir /.../Projects/my-djanogo-project/ --diff --pyver "3.11.4"
 ```
 
-This command will search for Django project files in the `/.../Projects/my-djanogo-project/my_django_app/` directory and generate a Dockerfile with Python version `3.11.4`. It will also display the differences between the current and generated Dockerfile but not save the generated Dockerfile.
+This command will search for Django project files in the `/.../Projects/my-djanogo-project/` directory (and all subdirectories) and generate a Dockerfile with Python version `3.11.4`. It will also display the differences between the current and generated Dockerfile but not force save the generated Dockerfile.
 
 ### Save Default Options
 
@@ -42,7 +42,7 @@ You can save default options for the `dockerfile-django` command by creating/upd
 # pyproject.toml
 
 [tool.dockerfile_django]
-dir = "...Projects/my-djanogo-project/my_django_app/"
+dir = "...Projects/my-djanogo-project/"
 force = false
 diff = true
 pyver = "3.11.4"
