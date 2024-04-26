@@ -1,0 +1,5 @@
+[tool.dockerfile_django]
+dir = "."
+force = false
+diff = true
+python_version = "3.11.4"
