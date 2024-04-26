@@ -69,7 +69,8 @@ def test_generate_not_supported_python():
         )
         assert result.exit_code == 1
         assert (
-            f"[WARNING] It looks like you are using Python {PYTHON_NOT_SUPPORTED}" in result.stdout
+            f"[WARNING] It looks like you are using Python {PYTHON_NOT_SUPPORTED}"
+            in result.stdout
         )
 
 
@@ -89,5 +90,6 @@ def test_generate_pinned_supported_python():
         )
         assert result.exit_code == 1
         assert (
-            f"[WARNING] It looks like you are using Python {PYTHON_PINNED}" in result.stdout
+            f"[WARNING] It looks like you are using Python {PYTHON_PINNED}"
+            in result.stdout
         )

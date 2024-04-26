@@ -127,29 +127,19 @@ def get_server_info(dependency_file: Path) -> ServerEnum:
         dependency_file, "uvicorn", "#"
     ) and check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.uvicorn
-        console.print(
-            f"[INFO] Uvicorn Web Server was found in '{dependency_file}'"
-        )
+        console.print(f"[INFO] Uvicorn Web Server was found in '{dependency_file}'")
     elif check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.gunicorn
-        console.print(
-            f"[INFO] Gunicorn Web Server was found in '{dependency_file}'"
-        )
+        console.print(f"[INFO] Gunicorn Web Server was found in '{dependency_file}'")
     elif check_for_keyword_in_file(dependency_file, "daphne", "#"):
         server = ServerEnum.daphne
-        console.print(
-            f"[INFO] Daphne Web Server was found in '{dependency_file}'"
-        )
+        console.print(f"[INFO] Daphne Web Server was found in '{dependency_file}'")
     elif check_for_keyword_in_file(dependency_file, "hypercorn", "#"):
         server = ServerEnum.hypercorn
-        console.print(
-            f"[INFO] Hypercorn Web Server was found in '{dependency_file}'"
-        )
+        console.print(f"[INFO] Hypercorn Web Server was found in '{dependency_file}'")
     elif check_for_keyword_in_file(dependency_file, "granian", "#"):
         server = ServerEnum.granian
-        console.print(
-            f"[INFO] Granian Web Server was found in '{dependency_file}'"
-        )
+        console.print(f"[INFO] Granian Web Server was found in '{dependency_file}'")
     else:
         server = ServerEnum.gunicorn
         console.print(
@@ -167,16 +157,12 @@ def get_database_info(dependency_file: Path) -> DatabaseEnum:
     :param dependency_file:
     :return: The database type.
     """
-    console.print(
-        f"[INFO] Check for database in '{dependency_file}'"
-    )
+    console.print(f"[INFO] Check for database in '{dependency_file}'")
     if check_for_keyword_in_file(
         dependency_file, "psycopg", "#"
     ) or check_for_keyword_in_file(dependency_file, "psycopg2", "#"):
         database = DatabaseEnum.postgres
-        console.print(
-            f"[INFO] Postgres was found in '{dependency_file}'"
-        )
+        console.print(f"[INFO] Postgres was found in '{dependency_file}'")
     # TODO: Add more database checks (e.g. sqlite, mysql, oracle, etc.)
     else:
         console.print(
@@ -266,9 +252,7 @@ def get_settings_config(dir: Path = Path(".")) -> SettingsConfig:
         )
 
     # settings_file = settings_files[0]
-    console.print(
-        f"[INFO] Extracting config from '{closest_settings}'"
-    )
+    console.print(f"[INFO] Extracting config from '{closest_settings}'")
 
     has_collectstatic = check_for_keyword_in_file(closest_settings, "STATIC_ROOT", "#")
 
@@ -285,9 +269,7 @@ def get_settings_config(dir: Path = Path(".")) -> SettingsConfig:
             random_secret_key = get_random_secret_key(50)
     elif not has_random_secret_key:
         random_secret_key = get_random_secret_key(50)
-        console.print(
-            f"[INFO] A random secret key was generated for the Dockerfile"
-        )
+        console.print(f"[INFO] A random secret key was generated for the Dockerfile")
     else:
         random_secret_key = None
 
@@ -463,9 +445,7 @@ def find_settings_files(start_path: Path = Path(".")) -> list[Path]:
     if not settings_files:
         settings_files, closest_settings = find_files("*settings/*prod*.py", start_path)
         if not settings_files:
-            console.print(
-                "[ERROR] No 'settings.py' files were found.", style="red"
-            )
+            console.print("[ERROR] No 'settings.py' files were found.", style="red")
             raise typer.Abort()
 
     for file in settings_files:
@@ -517,9 +497,7 @@ class DockerfileGenerator:
             if self.diff:
                 console.print(f"[INFO] Diff {output_name}\n")
                 if existing_content == generated_lines:
-                    console.print(
-                        f"[INFO] Identical {output_name}\n"
-                    )
+                    console.print(f"[INFO] Identical {output_name}\n")
                 else:
                     colorize_diff(output_name, existing_content, generated_lines)
                 return
@@ -544,9 +522,7 @@ class DockerfileGenerator:
 
         with open(output_path, "w") as f:
             f.write(generated_content)
-            console.print(
-                f"[INFO] Generated '{output_path}' was saved successfully!"
-            )
+            console.print(f"[INFO] Generated '{output_path}' was saved successfully!")
 
 
 def load_config(start_path: Path = Path(".")) -> dict:
@@ -555,11 +531,11 @@ def load_config(start_path: Path = Path(".")) -> dict:
     :param start_path:
     :return:
     """
-    _, config_path = find_files('pyproject.toml', start_path)
+    _, config_path = find_files("pyproject.toml", start_path)
     if config_path:
         with config_path.open("r") as file:
             config_data = toml.load(file)
-            return config_data.get('tool', {}).get('dockerfile_django', {})
+            return config_data.get("tool", {}).get("dockerfile_django", {})
     return {}
 
 
@@ -574,7 +550,7 @@ def generate(
         dir_okay=True,
         writable=False,
         readable=True,
-        resolve_path=True
+        resolve_path=True,
     ),
     force: bool = typer.Option(
         False, "--force", help="Force overwriting the existing Dockerfile"
@@ -595,15 +571,11 @@ def generate(
         "🐳🦄✨ Welcome to Dockerfile Generator for Django projects ✨🦄🐳",
         style="magenta",
     )
-    console.print(
-        f"[INFO] Extracting Django project config info from '{dir}'"
-    )
+    console.print(f"[INFO] Extracting Django project config info from '{dir}'")
 
     config = load_config(dir)
     if config:
-        console.print(
-            f"[INFO] Using the configuration from 'pyproject.toml' file:"
-        )
+        console.print(f"[INFO] Using the configuration from 'pyproject.toml' file:")
         table = Table(title="Config")
         table.add_column("Key", style="green", no_wrap=True)
         table.add_column("Value", style="green", no_wrap=True)

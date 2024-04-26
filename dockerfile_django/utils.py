@@ -82,7 +82,9 @@ def find_files(pattern, start_path: Path = Path(".")) -> tuple[list[Path], Path]
     return files, closest_file
 
 
-def check_for_keyword_in_file(file_path: Path, keyword: str, skip_string_starts_with: str = "") -> bool:
+def check_for_keyword_in_file(
+    file_path: Path, keyword: str, skip_string_starts_with: str = ""
+) -> bool:
     """
     Check if a keyword is present in a file.
 
