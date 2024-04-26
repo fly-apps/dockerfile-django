@@ -2,6 +2,56 @@
 
 This is a simple CLI that generates a Dockerfile for a Django Projects.
 
+## Usage
+
+### Generate a Dockerfile
+
+With `dockerfile-django` installed, you can generate a Dockerfile for your Django project. The command will search for the Django project files in the specified directory and generate a Dockerfile for your Django application.
+
+Go to the root directory of your Django project and run the following command:
+
+```shell
+dockerfile-django generate
+```
+
+By default, the command will search for Django project files in the current directory.
+
+### General Options
+
+- `--dir`: The directory path to search for Django project files. By default, it is set to the current directory.
+- `--force`: Force overwriting the existing Dockerfile. By default, it is set to `False`.
+- `--diff`: Display differences between the current and generated Dockerfile. By default, it is set to `False`.
+- `--pyver`: Python version to use in the Dockerfile. By default, it is set to `DEFAULT_PYTHON_VERSION` (3.12).
+- `--help`: Show the help message and exit.
+
+### Example
+
+```shell
+dockerfile-django generate --dir /.../Projects/my-djanogo-project/my_django_app/ --diff --pyver "3.11.4"
+```
+
+This command will search for Django project files in the `/.../Projects/my-djanogo-project/my_django_app/` directory and generate a Dockerfile with Python version `3.11.4`. It will also display the differences between the current and generated Dockerfile but not save the generated Dockerfile.
+
+### Save Default Options
+
+You can save default options for the `dockerfile-django` command by creating/updating a `pyproject.toml` file in your project directory.
+
+`[tool]` table is used to store the default options for the `dockerfile-django` command.
+
+```toml
+# pyproject.toml
+
+[tool.dockerfile_django]
+dir = "...Projects/my-djanogo-project/my_django_app/"
+force = false
+diff = true
+pyver = "3.11.4"
+```
+
+`dockerfile-django` will use the default options from the `pyproject.toml` file if no options are provided.
+
+You can also override the default options by providing the [options](#general-options) in the command line.
+
 ## Contributing
 
 ### Setting up the project
