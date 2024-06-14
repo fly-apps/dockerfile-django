@@ -161,6 +161,12 @@ cd dockerfile-django/
 poetry run pytest
 ```
 
+To produce a coverage report, run:
+
+```shell
+poetry run pytest --cov=dockerfile_django
+```
+
 #### Activating the virtual environment and running the tests
 
 1. Navigate to the project directory (root)
