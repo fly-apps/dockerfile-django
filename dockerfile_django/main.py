@@ -1,28 +1,26 @@
-import toml
-import re
-from enum import Enum
-from typing import Optional
-
-import typer
 import os
 import platform
+import re
+from enum import Enum
 from pathlib import Path
-from packaging import version
+from typing import Optional
+
+import toml
+import typer
 from jinja2 import Environment, FileSystemLoader
+from packaging import version
+from pydantic import BaseModel
 from rich.console import Console
 from rich.table import Table
 
-from pydantic import BaseModel
-
 from dockerfile_django.utils import (
-    find_files,
     check_for_keyword_in_file,
-    get_random_secret_key,
-    find_file_same_dir,
-    extract_secret_key_from_dockerfile,
     colorize_diff,
+    extract_secret_key_from_dockerfile,
+    find_file_same_dir,
+    find_files,
+    get_random_secret_key,
 )
-
 
 cli = typer.Typer()
 
@@ -127,24 +125,36 @@ def get_server_info(dependency_file: Path) -> ServerEnum:
         dependency_file, "uvicorn", "#"
     ) and check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.uvicorn
-        console.print(f"[INFO] Uvicorn Web Server was found in '{dependency_file}'")
+        console.print(
+            f"[INFO] Uvicorn Web Server was found in '{dependency_file}'"
+        )
     elif check_for_keyword_in_file(dependency_file, "gunicorn", "#"):
         server = ServerEnum.gunicorn
-        console.print(f"[INFO] Gunicorn Web Server was found in '{dependency_file}'")
+        console.print(
+            f"[INFO] Gunicorn Web Server was found in '{dependency_file}'"
+        )
     elif check_for_keyword_in_file(dependency_file, "daphne", "#"):
         server = ServerEnum.daphne
-        console.print(f"[INFO] Daphne Web Server was found in '{dependency_file}'")
+        console.print(
+            f"[INFO] Daphne Web Server was found in '{dependency_file}'"
+        )
     elif check_for_keyword_in_file(dependency_file, "hypercorn", "#"):
         server = ServerEnum.hypercorn
-        console.print(f"[INFO] Hypercorn Web Server was found in '{dependency_file}'")
+        console.print(
+            f"[INFO] Hypercorn Web Server was found in '{dependency_file}'"
+        )
     elif check_for_keyword_in_file(dependency_file, "granian", "#"):
         server = ServerEnum.granian
-        console.print(f"[INFO] Granian Web Server was found in '{dependency_file}'")
+        console.print(
+            f"[INFO] Granian Web Server was found in '{dependency_file}'"
+        )
     else:
         server = ServerEnum.gunicorn
         console.print(
-            f"[WARNING] No known Web Server was found in '{dependency_file}'. Gunicorn Web Server is used instead."
-            f"Make sure to update the generated Dockerfile with the correct Web Server.",
+            f"[WARNING] No known Web Server was found in '{dependency_file}'. "
+            f"Gunicorn Web Server is used instead."
+            f"Make sure to update the generated Dockerfile with the correct "
+            f"Web Server.",
             style="yellow",
         )
     return server
@@ -194,7 +204,8 @@ def get_dependency_config(dir: Path = Path(".")) -> DependencyConfig:
         console.print("[INFO] 'pyproject.toml' was found.")
     else:
         console.print(
-            "[WARNING] No dependency file was found. 'requirements.txt' is used instead.",
+            "[WARNING] No dependency file was found. 'requirements.txt' "
+            "is used instead.",
             style="yellow",
         )
         dependency_manager = DependencyManagerPackageEnum.pip
@@ -235,26 +246,31 @@ def get_settings_config(dir: Path = Path(".")) -> SettingsConfig:
 
     if len(settings_files) > 1:
         console.print(
-            f"[WARNING] Multiple 'settings.py' files were found in your Django project: ",
+            "[WARNING] Multiple 'settings.py' files were found in your "
+            "Django project: ",
             style="yellow",
         )
         console.print(
-            f"{', '.join(str(settings_file) for settings_file in settings_files)}",
+            f"{', '.join(str(settings) for settings in settings_files)}",
             style="blue",
         )
         console.print(
-            f"[WARNING] It's not recommended to have multiple 'settings.py' files. "
-            f"Instead, you can have a 'settings/' directory with the settings files according to the different "
-            f"environments (e.g. local.py, staging.py, production.py). "
-            f"In this case, you can specify which settings file to use when running the Django project by "
-            f"setting the 'DJANGO_SETTINGS_MODULE' environment variable to the corresponding settings file.",
+            "[WARNING] It's not recommended to have multiple 'settings.py' "
+            "files. Instead, you can have a 'settings/' directory with the "
+            "settings files according to the different environments "
+            "(e.g. local.py, staging.py, production.py). In this case, you "
+            "can specify which settings file to use when running the Django "
+            "project by setting the 'DJANGO_SETTINGS_MODULE' environment "
+            "variable to the corresponding settings file.",
             style="yellow",
         )
 
     # settings_file = settings_files[0]
     console.print(f"[INFO] Extracting config from '{closest_settings}'")
 
-    has_collectstatic = check_for_keyword_in_file(closest_settings, "STATIC_ROOT", "#")
+    has_collectstatic = check_for_keyword_in_file(
+        closest_settings, "STATIC_ROOT", "#"
+    )
 
     has_random_secret_key = check_for_keyword_in_file(
         closest_settings, "get_random_secret_key()", "#"
@@ -269,7 +285,9 @@ def get_settings_config(dir: Path = Path(".")) -> SettingsConfig:
             random_secret_key = get_random_secret_key(50)
     elif not has_random_secret_key:
         random_secret_key = get_random_secret_key(50)
-        console.print(f"[INFO] A random secret key was generated for the Dockerfile")
+        console.print(
+            "[INFO] A random secret key was generated for the Dockerfile"
+        )
     else:
         random_secret_key = None
 
@@ -297,7 +315,8 @@ def get_project_config(dir: Path = Path(".")) -> OtherConfig:
         wsgi_name = closest_wsgi.parent.name
         if len(wsgi_files) > 1:
             console.print(
-                f"[WARNING] Multiple 'wsgi.py' files were found in your Django project: ",
+                "[WARNING] Multiple 'wsgi.py' files were found in your "
+                "Django project: ",
                 style="yellow",
             )
             console.print(
@@ -305,8 +324,9 @@ def get_project_config(dir: Path = Path(".")) -> OtherConfig:
                 style="blue",
             )
             console.print(
-                f"[WARNING] Before proceeding, make sure '{wsgi_name}' is the module containing a "
-                f"WSGI application object named 'application'. If not, update your Dockefile.",
+                f"[WARNING] Before proceeding, make sure '{wsgi_name}' "
+                f"is the module containing a WSGI application object named "
+                f"'application'. If not, update your Dockefile.",
                 style="yellow",
             )
 
@@ -315,7 +335,8 @@ def get_project_config(dir: Path = Path(".")) -> OtherConfig:
         asgi_name = closest_asgi.parent.name
         if len(asgi_files) > 1:
             console.print(
-                f"[WARNING] Multiple 'asgi.py' files were found in your Django project: ",
+                "[WARNING] Multiple 'asgi.py' files were found in your "
+                "Django project: ",
                 style="yellow",
             )
             console.print(
@@ -323,29 +344,39 @@ def get_project_config(dir: Path = Path(".")) -> OtherConfig:
                 style="blue",
             )
             console.print(
-                f"[WARNING] Before proceeding, make sure '{asgi_name}' is the module containing a "
-                f"ASGI application object named 'application'. If not, update your Dockefile.",
+                f"[WARNING] Before proceeding, make sure '{asgi_name}' is "
+                f"the module containing a ASGI application object named "
+                f"'application'. If not, update your Dockefile.",
                 style="yellow",
             )
 
     if wsgi_found and asgi_found:
         console.print(
-            f"[WARNING] Both 'wsgi.py' and 'asgi.py' files were found in your Django project.",
+            "[WARNING] Both 'wsgi.py' and 'asgi.py' files were found in "
+            "your Django project.",
             style="yellow",
         )
-        settings_files, closest_settings = find_settings_files(dir)
-        if check_for_keyword_in_file(closest_settings, "WSGI_APPLICATION", "#"):
+        _, closest_settings = find_settings_files(dir)
+        if check_for_keyword_in_file(
+            closest_settings, "WSGI_APPLICATION", "#"
+        ):
             asgi_found = False
             console.print(
-                f"[WARNING] 'WSGI_APPLICATION' setting was found in your 'settings.py' file. Using WSGI server in the "
-                f"Dockerfile. If that's not correct, make sure to update your Dockerfile to use an ASGI server.",
+                "[WARNING] 'WSGI_APPLICATION' setting was found in your "
+                "'settings.py' file. Using WSGI server in the Dockerfile. "
+                "If that's not correct, make sure to update your Dockerfile "
+                "to use an ASGI server.",
                 style="yellow",
             )
-        if check_for_keyword_in_file(closest_settings, "ASGI_APPLICATION", "#"):
+        if check_for_keyword_in_file(
+            closest_settings, "ASGI_APPLICATION", "#"
+        ):
             wsgi_found = False
             console.print(
-                f"[WARNING] 'ASGI_APPLICATION' setting was found in your 'settings.py' file. Using WSGI server in the "
-                f"Dockerfile. If that's not correct, make sure to update your Dockerfile to use a WSGI server.",
+                "[WARNING] 'ASGI_APPLICATION' setting was found in your "
+                "'settings.py' file. Using WSGI server in the Dockerfile. "
+                "If that's not correct, make sure to update your Dockerfile "
+                "to use a WSGI server.",
                 style="yellow",
             )
     elif not wsgi_found and not asgi_found:
@@ -356,7 +387,11 @@ def get_project_config(dir: Path = Path(".")) -> OtherConfig:
 
     return OtherConfig(
         server_type=ServerTypeEnum.wsgi if wsgi_found else ServerTypeEnum.asgi,
-        project_name=asgi_name if asgi_found else wsgi_name if wsgi_found else "demo",
+        project_name=asgi_name
+        if asgi_found
+        else wsgi_name
+        if wsgi_found
+        else "demo",
     )
 
 
@@ -364,7 +399,8 @@ def get_python_info(python_version: str = None) -> tuple[str, bool]:
     """
     Get the Python version and check if it is pinned.
 
-    :return: The Python version and whether it is pinned. Default to the latest supported version.
+    :return: The Python version and whether it is pinned.
+    Default to the latest supported version.
     """
     version_str = python_version or platform.python_version()
 
@@ -380,15 +416,19 @@ def get_python_info(python_version: str = None) -> tuple[str, bool]:
         is_pinned = bool(re.search(r"[^\d.]", version_str))
 
         current_version = version.parse(full_version)
-        latest_supported_version = version.parse(PYTHON_LATEST_SUPPORTED_VERSION)
+        latest_supported_version = version.parse(
+            PYTHON_LATEST_SUPPORTED_VERSION
+        )
 
         if current_version < latest_supported_version:
             console.print(
-                f"[WARNING] It looks like you are using Python {version_str}, but it has reached its "
-                f"end of support. Using Python {PYTHON_LATEST_SUPPORTED_VERSION} to build your image instead. "
-                f"Make sure to update the Dockerfile to use an image that is compatible with the Python "
-                f"version you are using. We highly recommend that you update your application to use Python "
-                f"{PYTHON_LATEST_SUPPORTED_VERSION} or newer. "
+                f"[WARNING] It looks like you are using Python {version_str}, "
+                f"but it has reached its end of support. Using Python "
+                f"{PYTHON_LATEST_SUPPORTED_VERSION} to build your image "
+                f"instead. Make sure to update the Dockerfile to use an "
+                f"image that is compatible with the Python version you are "
+                f"using. We highly recommend that you update your application "
+                f"to use Python {PYTHON_LATEST_SUPPORTED_VERSION} or newer. "
                 f"(https://devguide.python.org/versions/#supported-versions)",
                 style="yellow",
             )
@@ -399,14 +439,17 @@ def get_python_info(python_version: str = None) -> tuple[str, bool]:
 
         if is_pinned:
             console.print(
-                f"[WARNING] It looks like you are using Python {version_str}, which is not an official "
-                f"release. This version is being explicitly pinned in the generated Dockerfile, and should be "
-                f"changed to an official release before deploying to production.",
+                f"[WARNING] It looks like you are using Python {version_str}, "
+                f"which is not an official release. This version is being "
+                f"explicitly pinned in the generated Dockerfile, and should "
+                f"be changed to an official release before deploying to "
+                f"production.",
                 style="yellow",
             )
         else:
             console.print(
-                f"[INFO] Python {version_str} was detected. 'python:{partial_version}-slim'"
+                f"[INFO] Python {version_str} was detected. "
+                f"'python:{partial_version}-slim'"
                 f" image will be set in the Dockerfile.",
             )
 
@@ -415,13 +458,16 @@ def get_python_info(python_version: str = None) -> tuple[str, bool]:
         return DEFAULT_PYTHON_VERSION.split("."), False
 
 
-def find_server_files(start_path: Path = Path(".")) -> tuple[list[Path], list[Path]]:
+def find_server_files(
+    start_path: Path = Path("."),
+) -> tuple[list[Path], list[Path]]:
     """
     Search for 'wsgi.py.py' and 'asgi.py' files starting from 'start_path',
     excluding any paths that contain 'site-packages'.
 
     :param start_path: The directory to start the search from.
-    :return: A tuple of lists containing Path objects pointing to 'wsgi.py' and 'asgi.py' files.
+    :return: A tuple of lists containing Path objects pointing
+    to 'wsgi.py' and 'asgi.py' files.
     """
     wsgi_files, closest_wsgi = find_files("wsgi.py", start_path)
     asgi_files, closest_asgi = find_files("asgi.py", start_path)
@@ -443,9 +489,13 @@ def find_settings_files(start_path: Path = Path(".")) -> list[Path]:
     """
     settings_files, closest_settings = find_files("*settings*.py", start_path)
     if not settings_files:
-        settings_files, closest_settings = find_files("*settings/*prod*.py", start_path)
+        settings_files, closest_settings = find_files(
+            "*settings/*prod*.py", start_path
+        )
         if not settings_files:
-            console.print("[ERROR] No 'settings.py' files were found.", style="red")
+            console.print(
+                "[ERROR] No 'settings.py' files were found.", style="red"
+            )
             raise typer.Abort()
 
     for file in settings_files:
@@ -461,7 +511,10 @@ class DockerfileGenerator:
     """
 
     def __init__(
-        self, project_info: DjangoProjectConfig, force: bool = False, diff: bool = False
+        self,
+        project_info: DjangoProjectConfig,
+        force: bool = False,
+        diff: bool = False,
     ) -> None:
         self.project_info = project_info
         self.force = force
@@ -475,7 +528,9 @@ class DockerfileGenerator:
         for template_name, output_name in templates.items():
             self.render_and_write_template(template_name, output_name)
 
-    def render_and_write_template(self, template_name: str, output_name: str) -> None:
+    def render_and_write_template(
+        self, template_name: str, output_name: str
+    ) -> None:
         console.print(f"[INFO] Generating {output_name}...")
         env = Environment(
             loader=FileSystemLoader(TEMPLATE_DIR),
@@ -489,7 +544,7 @@ class DockerfileGenerator:
         output_path = os.path.join(self.project_info.dir, output_name)
 
         if os.path.exists(output_path) and not self.force:
-            with open(output_path, "r") as f:
+            with open(output_path, "r", encoding="utf-8") as f:
                 existing_content = f.readlines()
 
             generated_lines = generated_content.splitlines(keepends=True)
@@ -499,7 +554,9 @@ class DockerfileGenerator:
                 if existing_content == generated_lines:
                     console.print(f"[INFO] Identical {output_name}\n")
                 else:
-                    colorize_diff(output_name, existing_content, generated_lines)
+                    colorize_diff(
+                        output_name, existing_content, generated_lines
+                    )
                 return
             elif existing_content == generated_lines:
                 console.print(f"[INFO] Identical {output_name}\n")
@@ -517,12 +574,16 @@ class DockerfileGenerator:
                     console.print("\nOverwrite?", style="yellow bold"),
                 )
             ):
-                console.print(f"[INFO] Skip overwriting the existing {output_name}...")
+                console.print(
+                    f"[INFO] Skip overwriting the existing {output_name}..."
+                )
                 return
 
-        with open(output_path, "w") as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(generated_content)
-            console.print(f"[INFO] Generated '{output_path}' was saved successfully!")
+            console.print(
+                f"[INFO] Generated '{output_path}' was saved successfully!"
+            )
 
 
 def load_config(start_path: Path = Path(".")) -> dict:
@@ -575,7 +636,9 @@ def generate(
 
     config = load_config(dir)
     if config:
-        console.print(f"[INFO] Using the configuration from 'pyproject.toml' file:")
+        console.print(
+            "[INFO] Using the configuration from 'pyproject.toml' file:"
+        )
         table = Table(title="Config")
         table.add_column("Key", style="green", no_wrap=True)
         table.add_column("Value", style="green", no_wrap=True)
@@ -598,11 +661,16 @@ def welcome():
     """
     Display a welcome message.
     """
-    console.print("🐳🦄✨ Welcome to Dockerfile Generator for Django projects ✨🦄🐳")
+    console.print(
+        "🐳🦄✨ Welcome to Dockerfile Generator for Django projects ✨🦄🐳"
+    )
     console.print("Usage: dockerfile-django [COMMAND]")
     console.print("Commands:")
     console.print("  welcome         Display a welcome message")
-    console.print("  generate        Generate a Dockerfile for Django projects")
     console.print(
-        "Run 'dockerfile-django [COMMAND] --help' for more information on a specific command."
+        "  generate        Generate a Dockerfile for Django projects"
+    )
+    console.print(
+        "Run 'dockerfile-django [COMMAND] --help' for more information "
+        "on a specific command."
     )

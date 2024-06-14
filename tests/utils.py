@@ -1,8 +1,9 @@
 import os
 import shutil
 
-
-PYTHON_VERSION = "3.12.2"  # make sure to keep this updated to a supported version
+PYTHON_VERSION = (
+    "3.12.2"  # make sure to keep this updated to a supported version
+)
 
 
 def copy_dir_to_tmp_path(scenario_dir, tmp_path):

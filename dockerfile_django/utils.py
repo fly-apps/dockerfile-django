@@ -1,18 +1,20 @@
 import difflib
 import re
+import secrets
+from pathlib import Path
 
 import typer
-import secrets
-
-from pathlib import Path
 from rich.console import Console
 
 console = Console()
 
 
-def colorize_diff(output_name: str, current_file: list, generated_file: list) -> None:
+def colorize_diff(
+    output_name: str, current_file: list, generated_file: list
+) -> None:
     """
-    Prints a colorized diff of two sets of lines to the terminal, ignoring blank lines.
+    Prints a colorized diff of two sets of lines to the terminal,
+    ignoring blank lines.
 
     Args:
         - output_name: The name of the file being compared.
@@ -29,7 +31,8 @@ def colorize_diff(output_name: str, current_file: list, generated_file: list) ->
     typer.secho(f"+++ Generated {output_name}\n", fg=typer.colors.GREEN)
 
     for line in diff:
-        # Strip the newline character from the end since `typer.secho` add it back
+        # Strip the newline character from the end since `typer.secho`
+        # add it back
         stripped_line = line.rstrip("\n")
         if line.startswith("+"):
             typer.secho(stripped_line, fg=typer.colors.GREEN)
@@ -47,7 +50,8 @@ def find_file_same_dir(pattern, path=".") -> Path:
 
     Args:
         pattern (str): The pattern to search for.
-        path (str, optional): The directory path to search in. Defaults to '.' (current directory).
+        path (str, optional): The directory path to search in. Defaults to
+        '.' (current directory).
 
     Returns:
         Path: The path to the found file, or None if not found.
@@ -60,12 +64,15 @@ def find_file_same_dir(pattern, path=".") -> Path:
         return None
 
 
-def find_files(pattern, start_path: Path = Path(".")) -> tuple[list[Path], Path]:
+def find_files(
+    pattern, start_path: Path = Path(".")
+) -> tuple[list[Path], Path]:
     """
     Find all files with the specified pattern in the given directory.
 
     :param pattern: The pattern to search for.
-    :param start_path: The directory path to search in. Defaults to '.' (current directory).
+    :param start_path: The directory path to search in. Defaults to
+    '.' (current directory).
     :return: A list of paths to the found files and the closest file path.
     """
     files = []
@@ -94,7 +101,7 @@ def check_for_keyword_in_file(
     :return:
     """
     try:
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             for line in file:
                 if line.strip().startswith(skip_string_starts_with):
                     continue
@@ -125,7 +132,7 @@ def extract_secret_key_from_dockerfile(dockerfile_path: str) -> str:
     pattern = r"^ENV SECRET_KEY\s+(.*)$"
 
     try:
-        with open(dockerfile_path, "r") as file:
+        with open(dockerfile_path, "r", encoding="utf-8") as file:
             for line in file:
                 match = re.match(pattern, line.strip())
                 if match:

@@ -113,19 +113,31 @@ poetry run dockerfile-django generate --help
 ╰───────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-### Code Formatting
+### Linters and Code Formatters
 
-We use [Black](https://black.readthedocs.io/en/stable/) to automatically format our code according to consistent style guidelines. Black ensures that all code contributions adhere to a unified code style, promoting readability and maintainability throughout the project.
+[Ruff](https://docs.astral.sh/ruff/) is a fast and configurable Python linter and formatter written in Rust. 
 
-Black is already installed in the project's virtual environment.
+Ruff is already installed in the project's virtual environment (dev).
 
-Once installed, you can format your code using Black by running it on your project directory:
+Once installed, you can run `ruff check` to lint the files, which mean it analyses the code to find and report issues related to style, potential errors, and best practices:
 
 ```shell
-poetry run black .
+poetry run ruff check .
 ```
 
-This command will recursively format all Python files in the current directory and its subdirectories according to Black's style guidelines.
+and use `--fix` option to fix any fixable errors:
+
+```shell
+poetry run ruff check . --fix
+```
+
+Additionally, you can automatically format your code to comply with the style guidelines enforced by running:
+
+```shell
+poetry run ruff format .
+```
+
+> Specific **linter** and **format** configurations are described on `pyproject.toml` on tables `[tool.ruff.lint]` and `[tool.ruff.format]`, respectively.
 
 ### Generating a Dockerfile for a Test Case
 
