@@ -18,7 +18,18 @@ toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "7.4.4"
-black = "23.1.0"
+ruff = "^0.4.8"
+
+[tool.ruff]
+line-length = 79
+indent-width = 4
+
+[tool.ruff.lint]
+preview = true
+select = ['F', 'I', 'E', 'W', 'PT', 'PL']
+
+[tool.ruff.format]
+preview = true
 
 [build-system]
 requires = ["poetry-core"]
